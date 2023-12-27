@@ -1,0 +1,1467 @@
+<html><head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bot / Headless Chrome Detection Tests</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" integrity="sha512-HK5fgLBL+xu6dm/Ii3z4xhlSUyZgTT9tuc/hSrtw6uzJOvgRr2a9jyxxT1ely+B+xFAmJKVSTbpM/CuL7qxO8w==" crossorigin="anonymous">
+  <style>
+    iframe.canvased {
+      display: none;
+    }
+
+    .modal-content {
+      width: 50%;
+      height: 80%;
+    }
+
+    body {
+      padding: 7px;
+    }
+
+    fieldset {
+      border: 4px dotted red;
+      padding: 16px;
+    }
+
+    fieldset legend {
+      font-size: 20px;
+      color: red;
+    }
+
+    hr {
+      margin-top: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    #botScore {
+      margin-top: 1rem;
+      font-size: 18px;
+      font-family: monospace;
+      border: 3px solid #2b2b2b;
+      padding: 9px;
+      font-weight: 600;
+    }
+
+    #changelog:hover {
+      text-decoration: underline;
+    }
+
+    #behavioralScore {
+      color: rgb(0, 0, 0);
+      font-weight: 700;
+      font-size: 116%;
+    }
+
+    #behavioralSamples {
+      margin-top: 1rem;
+      font-size: 12px;
+      font-family: monospace;
+      padding: 9px;
+    }
+  </style>
+
+  <link rel="stylesheet" href="highlightjs/styles/stackoverflow-dark.css">
+  <script src="highlightjs/highlight.pack.js"></script>
+  <script src="./ua-parser.min.js"></script>
+  <script src="./fpCollect.min.js"></script>
+  <script src="./fpScanner.js"></script>
+  <script src="https://abs.incolumitas.com/lib.js"></script>
+</head>
+
+<body>
+  <script src="./hc.js"></script>
+  <div class="section">
+    <div class="container">
+      <div class="columns">
+        <div class="column is-12 is-10-desktop mx-auto">
+          <div class="content">
+            <h1 class="title title is-2">Curated List of Bot / Headless Chrome Detection Tests</h1>
+            <p>
+              <strong>🚀 v0.6.2 (30th September 2023) 🚀</strong>
+              <a href="#" id="changelog" onclick="showModal('changelog')"> [Changelog]</a>
+            </p>
+            <div class="buttons">
+              <button onclick="showModal('puppeteer')" class="button is-info is-small">Use with Puppeteer</button>
+              <button onclick="showModal('playwright')" class="button is-info is-small">Use with Playwright</button>
+              <button onclick="showModal('realChrome')" class="button is-info is-small">Use with Google
+                Chrome</button>
+              <button onclick="showModal('advanced')" class="button is-info is-small">Use with Advanced Bot</button>
+              <button onclick="showModal('selenium')" class="button is-info is-small">Use with Selenium</button>
+            </div>
+
+            <div class="modal">
+              <div onclick="showModal()" class="modal-background"></div>
+              <div class="modal-content">
+                <pre id="botCode">              </pre>
+              </div>
+              <button onclick="showModal()" class="modal-close is-large" aria-label="close"></button>
+            </div>
+
+            <p>
+              This page attempts to detect if you are a Bot or Not. The tests are constantly kept up to date, please
+              check
+              the <a href="#" id="changelog2" onclick="showModal('changelog')">changelog</a> here.
+            </p>
+
+            <strong>Table of Contents</strong>
+            <ol>
+              <li><a href="#botBehavior">Behavioral Classification</a></li>
+              <li><a href="#moreInfo">More Sources and Links</a></li>
+              <li><a href="#botChallenge">Bot Challenge</a></li>
+              <li><a href="#newDetectionTests">New Detection Tests</a></li>
+              <li><a href="#oldDetectionTests">Old Detection Tests</a></li>
+              <li><a href="#ip-api">IP Address API</a></li>
+              <li><a href="#proxyDetection">Proxy/VPN Detection Tests</a></li>
+              <li><a href="#httpHeadersTitle">Http Headers</a></li>
+              <li><a href="#tcpipFingerprint">TCP/IP Fingerprint</a></li>
+              <li><a href="#tlsFingerprintNew">TLS Fingerprint</a></li>
+              <li><a href="#fingerprintjs">Browser Fingerprint</a></li>
+              <li><a href="#canvasFp">Canvas Fingerprint</a></li>
+              <li><a href="#webglFp">WebGL Fingerprint</a></li>
+              <li><a href="#webWorkerNav">Web Worker</a></li>
+              <li><a href="#serviceWorker">Service Worker</a></li>
+              <li><a href="#browserData">Browser Data</a></li>
+            </ol>
+
+            <hr>
+
+            <h3 id="botBehavior" class="title is-3">Behavioral Bot Classification</h3>
+
+            <p>
+              The test <code>behavioralClassificationScore</code> gives a
+              rating between <strong>0 (Bot)</strong> and <strong>1 (Human)</strong> based on advanced behavioral
+              heuristics.
+              A <strong>score below 0.5</strong> means that you are most likely a bot.
+            </p>
+
+            <p>
+              The first score is computed after 1,5 seconds of browsing on this site. Then, the behavioral score is
+              updated
+              after 4 seconds, 7 seconds, 10 seconds and 15 seconds.
+            </p>
+
+            <p>
+              Don't worry if you are browsing this page and you are given a score between 0.7 and 1.0,
+              the <code>behavioralClassificationScore</code> consist of 30+ individual classificators
+              and it is normal that there are false positives.
+            </p>
+
+            <p>
+              In order to test your bot with a real world problem, your bot has to <a href="#botChallenge">solve the
+                challenge below</a>.
+            </p>
+
+            <div class="behavioralData">
+              <span id="botScore">
+                <span>Your Behavioral Score: <span id="behavioralScore" style="color: rgb(38, 194, 0); text-decoration: underline;">1</span></span>
+              </span>
+              <div id="behavioralSamples"><p>Behavioral Bot Score after 1500ms: <span id="behavioralScore" style="color: hsl(108.33333333333334,100%,38%)">1</span></p></div>
+            </div>
+
+            <hr>
+
+            <script>
+              var toggleInfo = function () {
+                var el = document.getElementById('botInfo');
+                if (el.style.display === 'none') {
+                  el.style.display = 'block';
+                } else {
+                  el.style.display = 'none';
+                }
+              }
+            </script>
+
+            <h3 class="title is-3">More Sources/Information</h3>
+            <button id="moreInfo" onclick="toggleInfo()" class="button is-primary">
+              Expand all Sources / Links
+            </button>
+
+            <hr>
+
+            <div id="botInfo" style="display: none;">
+              <h3 class="is-4">Resources and Sources</h3>
+              <div class="columns">
+                <div class="column">
+                  <ol>
+                    <li>Kinda outdated (selenium, phantomjs): <a href="https://bot.sannysoft.com/">bot.sannysoft.com</a>
+                      and
+                      <a href="https://github.com/infosimples/detect-headless">a GitHub repo</a> from early 2019
+                      with
+                      similar detection techniques.
+                    </li>
+                    <li><a href="https://github.com/infosimples/detect-headless">Headless detection GitHub Repo</a>,
+                      last
+                      update in 2019</li>
+                    <li>Lot of good stuff from here: <a href="https://github.com/berstend/puppeteer-extra/tree/master/packages/puppeteer-extra-plugin-stealth">puppeteer-extra-plugin-stealth</a>
+                    </li>
+                    <li>Antoine Vastel: <a href="https://antoinevastel.com/bots/">antoinevastel.com/bots</a> and a
+                      more
+                      recent <a href="https://arh.antoinevastel.com/bots/areyouheadless">detection page using HTTP
+                        Headers</a> and his employers <a href="https://antoinevastel.com/bots/datadome">datadome
+                        detection
+                        page</a></li>
+                    <li>Pretty active <a href="https://gist.github.com/tegansnyder/c3aeae4d57768c58247ae6c4e5acd3d1">GitHub
+                        Gist</a> about preventing puppeteer detection</li>
+                    <li>Rather <a href="https://github.com/digitalhurricane-io/puppeteer-detection-100-percent">new
+                        detection method</a> found on GitHub </li>
+                    <li><a href="https://arh.antoinevastel.com/bots/areyouheadless">Vastel is detecting puppeteer
+                        with
+                        HTTP
+                        headers in early 2019...</a></li>
+                    <li>hacker news <a href="https://news.ycombinator.com/item?id=20479015">discussion</a> started
+                      by
+                      Vastel
+                    </li>
+                    <li>And <a href="https://www.tenantbase.com/tech/blog/cat-and-mouse/">the response from Evan
+                        Sangaline</a>, where he passes the new detection again</li>
+                    <li>Rather recent article (February 2020) about <a href="https://antoinevastel.com/javascript/2020/02/09/detecting-web-bots.html">Bot Detection
+                        101</a>
+                      principles</li>
+                    <li>Very recent (31 January 2021) and powerful bot / headless / puppeteer <a href="https://github.com/niespodd/browser-fingerprinting/blob/main/README.md">detection
+                        techniques</a></li>
+                    <li><a href="https://chebrowser.site/">Che Browser</a>, is it any good?</li>
+                    <li><a href="https://secretagent.dev/">SecretAgent</a>, The Web Browser Built for Scraping</li>
+                    <li><a href="https://github.com/kkapsner/CanvasBlocker">CanvasBlocker</a> nice Firefox plugin to
+                      prevent
+                      canvas fingerprinting</li>
+                    <li><a href="https://pixelprivacy.com/resources/browser-fingerprinting/">A very good article</a>
+                      from
+                      pixelprivacy.com about Browser Fingerprinting</li>
+                  </ol>
+                </div>
+                <div class="column">
+                  <img width="416" height="312" src="robotVeryGood.gif">
+                </div>
+              </div>
+
+              <h3 class="is-4">Other Bot Detection Sites</h3>
+              <ul>
+                <li><a href="https://browserleaks.com/">browserleaks.com</a> (very valuable information)</li>
+                <li><a href="https://pixelscan.net/">pixelscan</a> (quite good and new)</li>
+                <li><a href="https://abrahamjuliot.github.io/creepjs/">creepjs</a> (this guy is crazy)</li>
+
+                <li><a href="http://f.vision/">f.vision</a> (seems to do a very good job)</li>
+                <li><a href="https://whatleaks.com/">whatleaks.com</a> (focuses on proxy detection and the
+                  networking
+                  detection aspects)</li>
+              </ul>
+
+              <h3 class="is-4">The cats: Anti Bot Companies</h3>
+
+              The following Anti Bot companies are all using their custom JavaScript detection algorithms.
+
+              <div class="columns">
+                <div class="column">
+                  <ul>
+                    <li><a href="https://www.kasada.io/">Kasada</a></li>
+                    <li><a href="https://www.shapesecurity.com/">Shape Security</a></li>
+                    <li><a href="https://datadome.co/">DataDome</a></li>
+                    <li><a href="">Distil Networks (Acuired)</a></li>
+                    <li><a href="https://www.imperva.com/">Imperva</a></li>
+                    <li><a href="https://www.imperva.com/">Incapsula (Imperva now)</a></li>
+                    <li><a href="https://www.perimeterx.com/">PerimeterX</a></li>
+                    <li><a href="https://www.akamai.com/de/de/">Akamai</a></li>
+                    <li><a href="https://fingerprintjs.com/">FingerprintJS</a></li>
+                  </ul>
+                </div>
+                <div class="column">
+                  <ul>
+                    <li><a href="https://www.whiteops.com/">WhiteOps</a></li>
+                    <li><a href="https://www.radwarebotmanager.com/">ShieldSquare</a></li>
+                    <li><a href="https://www.f5.com/">F5</a></li>
+                    <li><a href="https://www.cloudflare.com/">Cloudflare (The End Boss)</a></li>
+                    <li><a href="https://www.arkoselabs.com/">Arkose Labs</a></li>
+                    <li><a href="https://www.forter.com/">Forter Protection</a></li>
+                    <li><a href="https://www.google.com/recaptcha/about/">reCAPTCHA</a></li>
+                    <li><a href="https://www.biocatch.com/">BioCatch</a></li>
+                  </ul>
+                </div>
+              </div>
+
+              <h3 class="is-4">Mouses: Bot/Proxy Companies (Selection)</h3>
+
+              The following Bot/Proxy companies are either selling bot/scraping or anonymization technology
+              (Proxies,
+              VPN)
+
+              <div class="columns">
+                <div class="column">
+                  <ul>
+                    <li><a href="https://zenscrape.com/">ZenScrape</a></li>
+                    <li><a href="https://luminati.io/">Luminati.io / Brightdata</a></li>
+                    <li><a href="https://oxylabs.io/">Oxylabs</a></li>
+                    <li><a href="https://smartproxy.com/">Smartproxy</a></li>
+                    <li><a href="https://stormproxies.com/">Storm Proxies</a></li>
+                    <li><a href="https://www.scraperapi.com/">scraperapi.com</a></li>
+                    <li><a href="https://scrapingrobot.com/">scrapingrobot.com</a></li>
+                  </ul>
+                </div>
+                <div class="column">
+                  <ul>
+                    <li><a href="https://www.geosurf.com/">GeoSurf</a></li>
+                    <li><a href="https://netnut.io/">NetNut</a></li>
+                    <li><a href="https://soax.com/">SOAX</a></li>
+                    <li><a href="https://www.scrapinghub.com/crawlera">scrapinghub</a></li>
+                    <li><a href="https://packetstream.io/">PacketStream</a></li>
+                    <li><a href="https://apify.com/">Apify</a></li>
+                    <li><a href="https://www.scrapingbee.com/">scrapingbee.com</a></li>
+                  </ul>
+                </div>
+              </div>
+              <hr>
+            </div>
+
+            <script src="usage.js?v=v0.6.1"></script>
+
+            <h3 class="title is-3">Bot Challenge</h3>
+            <p>
+              Your bot has to fill out the form below and submit it. Then you are prompted to
+              confirm the pop-up dialoge. After confirmation, you will see a table with basket items and prices.
+              Update the prices of this table and scrape the data as a final step.
+            </p>
+
+            <p>
+              Completing all those steps provides enough behaviroal information
+              in order to classify you as <a href="https://incolumitas.com/pages/BotOrNot/">BotOrNot</a>.
+            </p>
+
+            <button class="button is-primary" onclick="showModal('puppeteer')">Show Code to Solve The Bot
+              Challenge</button>
+            <hr>
+
+            <fieldset>
+              <legend>Bot Challenge</legend>
+              <div id="botChallengeContainer" class="columns">
+                <div id="formStuff" class="column is-6">
+                  <div id="userNameField" class="field">
+                    <label class="label">Username</label>
+                    <div class="control has-icons-left has-icons-right">
+                      <input name="userName" class="input" type="text" placeholder="Text input" value="not_a_bot">
+                      <span class="icon is-small is-left">
+                        <i class="fas fa-user"></i>
+                      </span>
+                      <span class="icon is-small is-right">
+                        <i class="fas fa-check"></i>
+                      </span>
+                    </div>
+                    <p class="help is-danger"></p>
+                  </div>
+
+                  <div id="emailField" class="field">
+                    <label class="label">Email</label>
+                    <div class="control has-icons-left has-icons-right">
+                      <input name="eMail" class="input" type="email" placeholder="Email input" value="hello@">
+                      <span class="icon is-small is-left">
+                        <i class="fas fa-envelope"></i>
+                      </span>
+                      <span class="icon is-small is-right">
+                        <i class="fas fa-check"></i>
+                      </span>
+                    </div>
+                    <p class="help is-danger"></p>
+                  </div>
+
+                  <div class="field">
+                    <label class="label">Number of Cookies</label>
+                    <div class="control">
+                      <div class="select">
+                        <select name="cookies">
+                          <option>One Cookie</option>
+                          <option>Two Cookies</option>
+                          <option>Three Cookies</option>
+                          <option>I want all the Cookies</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="field">
+                    <div class="control">
+                      <label class="checkbox">
+                        <input name="terms" type="checkbox">
+                        I agree to the <a href="#">terms and conditions</a>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div id="catField" class="field">
+                    <div class="control">
+                      <label class="radio">
+                        <input name="radioCat" type="radio" id="smolCat">
+                        I like Cats
+                      </label>
+                      <label class="radio">
+                        <input name="radioCat" type="radio" id="bigCat">
+                        I like big Cats
+                      </label>
+                    </div>
+                    <p class="help is-danger"></p>
+                  </div>
+
+                  <div class="field is-grouped">
+                    <div class="control">
+                      <button id="submit" class="button is-link">Submit</button>
+                    </div>
+                  </div>
+                </div>
+                <div id="tableStuff" class="column is-8" style="display: none">
+
+                  <script>
+                    var botQuestion = function () {
+                      if (confirm('Click "OK" if you are NOT a bot!')) {
+                        var fs = document.querySelector('#formStuff')
+                        fs.style.display = 'none';
+                        var ts = document.querySelector('#tableStuff')
+                        ts.style.display = 'block';
+                      } else {
+                        var fs = document.querySelector('#formStuff')
+                        fs.innerHTML = '<strong>Bad Bot</strong>';
+                      }
+                    }
+
+                    var updatePrice = function (index) {
+                      var priceTag = document.getElementById('price' + index);
+                      var button = document.getElementById('updatePrice' + index);
+                      button.classList.add('is-loading');
+                      setTimeout(function () {
+                        button.classList.remove('is-loading');
+                        priceTag.setAttribute('data-last-update', (new Date()).getTime());
+                        priceTag.innerText = Math.floor(Math.random() * 5000) + '$';
+                      }, Math.random() * 2000);
+                    }
+                  </script>
+
+                  <div class="table-container">
+                    <table class="table">
+                      <thead>
+                        <tr>
+                          <th><abbr title="Name">Name</abbr></th>
+                          <th><abbr title="Super High Price"></abbr>Price</th>
+                          <th><abbr title="URL">URL</abbr></th>
+                          <th><abbr title="Update Price">Price Update</abbr></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </fieldset>
+
+            <script>
+              var button = document.getElementById('submit');
+              button.addEventListener('click', function (event) {
+                event.preventDefault();
+
+                var status = true;
+                button.classList.add('is-loading');
+
+                var cookieSelection = document.querySelector('[name="cookies"]');
+
+                const data = {
+                  userName: document.querySelector('[name="userName"]').value,
+                  email: document.querySelector('[name="eMail"]').value,
+                  cookies: cookieSelection.options[cookieSelection.selectedIndex].value,
+                  terms: document.querySelector('[name="terms"]').value,
+                  smolCat: document.getElementById('smolCat').checked,
+                  bigCat: document.getElementById('bigCat').checked,
+                }
+
+                console.log(JSON.stringify(data))
+
+                var helpName = document.querySelector('#userNameField .help')
+                var nameInput = document.querySelector('#userNameField input')
+                if (data.userName === 'not_a_bot') {
+                  helpName.classList.add('is-danger');
+                  helpName.innerHTML = 'This username is taken!'
+                  nameInput.classList.remove('is-success')
+                  nameInput.classList.add('is-danger')
+                  status = false;
+                } else {
+                  helpName.classList.remove('is-danger');
+                  helpName.classList.add('is-success');
+                  helpName.innerText = 'This username looks good 🚀🚀🚀'
+                  nameInput.classList.remove('is-danger')
+                  nameInput.classList.add('is-success')
+                }
+
+                var helpEmail = document.querySelector('#emailField .help')
+                var emailInput = document.querySelector('#emailField input')
+                if (data.email === 'hello@') {
+                  helpEmail.classList.add('is-danger');
+                  helpEmail.innerHTML = 'This email is invalid!'
+                  emailInput.classList.remove('is-success')
+                  emailInput.classList.add('is-danger')
+                  status = false;
+                } else {
+                  helpEmail.classList.remove('is-danger');
+                  helpEmail.classList.add('is-success');
+                  helpEmail.innerText = 'This email looks good 🚀🚀🚀'
+                  emailInput.classList.remove('is-danger')
+                  emailInput.classList.add('is-success')
+                }
+
+                var helpCat = document.querySelector('#catField .help')
+                if (!data.smolCat && !data.bigCat) {
+                  helpCat.classList.add('is-danger');
+                  helpCat.innerHTML = 'You have to like SOME cat! 😿😿😿'
+                  status = false;
+                } else {
+                  helpCat.classList.remove('is-danger');
+                  helpCat.classList.add('is-success');
+                  helpCat.innerHTML = '😻😻😻'
+                }
+
+                if (status === false) {
+                  button.classList.remove('is-loading');
+                  return false;
+                }
+
+                fetch('https://abs.incolumitas.com/mockData', {
+                  method: 'POST',
+                  body: JSON.stringify(data),
+                }).then(function (response) {
+                  if (response.ok) {
+                    return response.json();
+                  }
+                  return Promise.reject(response);
+                }).then(function (data) {
+                  let el = document.querySelector('#tableStuff tbody');
+                  data.forEach((row, index) => {
+                    el.innerHTML += `
+                <tr><td class="name">${row.name}</td>
+                <td class="price"><strong id="price${index}">${row.price}</strong></td>
+                <td class="url"><a href="${row.url}">${row.url}</a></td>
+                <td class="priceUpdate"><button id="updatePrice${index}" class="button is-small is-dark" onclick="updatePrice(${index})">Update Price</button></td></tr>`
+                  })
+                  botQuestion();
+                }).catch(function (error) {
+                  console.warn(error);
+                }).finally(function () {
+                  button.classList.remove('is-loading');
+                })
+              });
+            </script>
+
+            <hr>
+
+            <script>
+              var old_results = {
+                intoli: {},
+                fpscanner: {},
+              };
+            </script>
+
+            <h3 id="newDetectionTests" class="title is-3">New Detection Tests
+              <a style="font-size: 70%" href="https://github.com/berstend/puppeteer-extra/issues/403">[1]</a>
+              <a style="font-size: 70%" href="https://github.com/berstend/puppeteer-extra/issues/407">[2]</a>
+              <a style="font-size: 70%" href="https://github.com/niespodd/browser-fingerprinting">[3]</a>
+              <a style="font-size: 70%" href="https://github.com/berstend/puppeteer-extra/issues/451">[4]</a>
+            </h3>
+
+            <pre id="new-tests">{
+  "puppeteerEvaluationScript": "OK",
+  "webdriverPresent": "OK",
+  "connectionRTT": "OK",
+  "refMatch": "OK",
+  "overrideTest": "OK",
+  "overflowTest": "OK",
+  "puppeteerExtraStealthUsed": "OK",
+  "inconsistentWebWorkerNavigatorPropery": "FAIL",
+  "inconsistentServiceWorkerNavigatorPropery": "FAIL",
+  "inconsistentUserAgent": "OK",
+  "inconsistentLanguages": "OK"
+}</pre>
+
+            <hr>
+
+            <h3 id="oldDetectionTests" class="title is-3">Old Bot Detection Tests (Intoli.com tests + additions,
+              Fingerprint
+              Scanner tests)</h3>
+            <pre id="detection-tests">{
+  "intoli": {
+    "userAgent": "OK",
+    "webDriver": "OK",
+    "webDriverAdvanced": "OK",
+    "pluginsLength": "OK",
+    "pluginArray": "OK",
+    "languages": "OK"
+  },
+  "fpscanner": {
+    "PHANTOM_UA": "OK",
+    "PHANTOM_PROPERTIES": "OK",
+    "PHANTOM_ETSL": "OK",
+    "PHANTOM_LANGUAGE": "OK",
+    "PHANTOM_WEBSOCKET": "OK",
+    "MQ_SCREEN": "OK",
+    "PHANTOM_OVERFLOW": "OK",
+    "PHANTOM_WINDOW_HEIGHT": "OK",
+    "HEADCHR_UA": "OK",
+    "WEBDRIVER": "OK",
+    "HEADCHR_CHROME_OBJ": "OK",
+    "HEADCHR_PERMISSIONS": "OK",
+    "HEADCHR_PLUGINS": "OK",
+    "HEADCHR_IFRAME": "OK",
+    "CHR_DEBUG_TOOLS": "OK",
+    "SELENIUM_DRIVER": "OK",
+    "CHR_BATTERY": "OK",
+    "CHR_MEMORY": "OK",
+    "TRANSPARENT_PIXEL": "OK",
+    "SEQUENTUM": "OK",
+    "VIDEO_CODECS": "OK"
+  }
+}</pre>
+
+            <hr>
+
+            <h3 id="ip-api" class="title is-3">IP Address API <a style="font-size: 70%" href="https://incolumitas.com/pages/IP-API/">[1]</a></h3>
+            <p>I maintain a public IP API that can also be used to check whether an IP address belongs to a data
+              center IP
+              address range such as
+              Azure,
+              AWS,
+              Digitalocean, Google Cloud Platform and many other cloud providers. Please <a href="https://incolumitas.com/pages/IP-API/">read the full blog article</a> for more a
+              thorough
+              introduction.</p>
+            <pre id="ip-api-data">{<br>  "ip": "24.166.87.104",<br>  "rir": "ARIN",<br>  "is_bogon": false,<br>  "is_mobile": false,<br>  "is_crawler": false,<br>  "is_datacenter": false,<br>  "is_tor": false,<br>  "is_proxy": false,<br>  "is_vpn": false,<br>  "is_abuser": false,<br>  "company": {<br>    "name": "Charter Communications Inc",<br>    "domain": "charter.com",<br>    "type": "isp",<br>    "network": "24.160.0.0 - 24.170.127.255",<br>    "whois": "https://api.ipapi.is/?whois=24.160.0.0"<br>  },<br>  "asn": {<br>    "asn": 10796,<br>    "route": "24.166.64.0/18",<br>    "descr": "TWC-10796-MIDWEST, US",<br>    "country": "us",<br>    "active": true,<br>    "org": "Charter Communications Inc",<br>    "domain": "charter.com",<br>    "abuse": "abuse@charter.net",<br>    "type": "isp",<br>    "created": "2000-06-09",<br>    "updated": "2018-11-27",<br>    "rir": "arin",<br>    "whois": "https://api.ipapi.is/?whois=AS10796"<br>  },<br>  "location": {<br>    "continent": "NA",<br>    "country": "United States",<br>    "country_code": "US",<br>    "state": "Ohio",<br>    "city": "Garfield Heights",<br>    "latitude": 41.417,<br>    "longitude": -81.60596,<br>    "zip": "44125",<br>    "timezone": "America/New_York",<br>    "local_time": "2023-12-05T00:39:21-05:00",<br>    "local_time_unix": 1701754761,<br>    "is_dst": false<br>  },<br>  "elapsed_ms": 0.38<br>}</pre>
+
+            <script>
+              fetch('https://api.ipapi.is/')
+                .then(response => response.json())
+                .then(function (data) {
+                  document.getElementById('ip-api-data').innerText = JSON.stringify(data, null, 2);
+                })
+                .catch(function (err) {
+                  document.getElementById('ip-api-data').innerText = 'Currently unable to obtain IP API data';
+                });
+            </script>
+
+            <hr>
+
+            <h3 id="proxyDetection" class="title is-3">Proxy/VPN Detection Tests</h3>
+
+            <p>
+              <a class="button is-primary" href="https://bot.incolumitas.com/proxy_detect.html">Visit the Proxy/VPN
+                detection Test Page</a>
+            </p>
+
+            <p>
+              The Proxy/VPN detection test can be found on a dedicated
+              page because the large test battery would otherwise clog this detection page.
+              Those techniques are:
+            </p>
+
+            <ul>
+              <li><em>Latency Test:</em> Compare ping from browser to server with ping from web server to external
+                IP
+                address</li>
+              <li><em>WebRTC Test:</em> Check if WebRTC leaks the real IP address</li>
+              <li><em>TCP/IP Fingerprint Test:</em> Compare the OS induced from the TCP/IP fingerprint with the OS
+                advertised by the User-Agent</li>
+              <li><em>Open Ports Test:</em> Check if the host connecting to the web server has open ports</li>
+              <li><em>Datacenter IP Test:</em> Check if the IP address belongs to a datacenter</li>
+              <li><em>DNS Leak Test:</em> Check if the DNS server of the client leaks any data</li>
+              <li><em>IP Timezone vs Browser Timezone Test:</em> Compare the IP geolocation timezone with the
+                browser
+                timezone</li>
+              <li><em>HTTP Proxy Headers Test:</em> Look for suspicious proxy headers in the HTTP headers</li>
+              <li>And many other tests that are constantly being updated!</li>
+            </ul>
+
+            <hr>
+
+            <h3 id="httpHeadersTitle" class="title is-3">HTTP Headers</h3>
+            <pre id="httpHeaders">{
+  "host": "abs.incolumitas.com",
+  "x-real-ip": "38.67.57.214",
+  "connection": "close",
+  "accept-language": "en-US,en;q=0.9",
+  "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
+  "accept": "*/*",
+  "origin": "https://bot.incolumitas.com",
+  "sec-fetch-site": "same-site",
+  "sec-fetch-mode": "cors",
+  "sec-fetch-dest": "empty",
+  "referer": "https://bot.incolumitas.com/",
+  "accept-encoding": "gzip, deflate, br"
+}</pre>
+
+            <hr>
+
+            <h3 id="tcpipFingerprint" class="title is-3"><a href="https://github.com/NikolaiT/zardaxt">zardaxt.py</a>
+              -
+              Passive TCP/IP Fingerprint
+              <a style="font-size: 70%" href="https://github.com/NikolaiT/zardaxt">[1]</a>
+            </h3>
+            <p>Several fields such as TCP Options or TCP Window Size or IP Fragment Flag depend heavily on the OS
+              type and
+              version. Detecting operating systems by analyzing the first incoming SYN packet is surely no exact
+              science,
+              but it's better than
+              nothing.</p>
+            <p>
+              The <a href="https://incolumitas.com/pages/TCP-IP-Fingerprint/">TCP/IP fingerprinting API</a> allows
+              you to
+              get your TCP/IP
+              fingerprint. It can be used for various purposes such as: Networking traffic analysis, Malware
+              detection, bot
+              detection, Proxy / VPN detection and so on.
+            </p>
+            <pre id="p0f">{<br>  "avg_score_os_class": {<br>    "Android": 10.28,<br>    "Chromium OS": 12.57,<br>    "Linux": 9.12,<br>    "Mac OS": 3.17,<br>    "Windows": 3.28,<br>    "iOS": 3.05<br>  },<br>  "details": {<br>    "client_ip": "88.216.214.39",<br>    "highest_os_avg": 12.57,<br>    "lookup_ip": "88.216.214.39",<br>    "num_fingerprints": 1,<br>    "os_highest_class": "Chromium OS",<br>    "os_mismatch": true,<br>    "perfect_score": 20.5<br>  },<br>  "fp": {<br>    "cap_len": 74,<br>    "dst_ip": "91.107.193.45",<br>    "dst_port": 443,<br>    "header_len": 74,<br>    "ip_checksum": 23984,<br>    "ip_df": 1,<br>    "ip_hdr_length": 5,<br>    "ip_id": 40051,<br>    "ip_mf": 0,<br>    "ip_nxt": null,<br>    "ip_off": 16384,<br>    "ip_plen": null,<br>    "ip_protocol": 6,<br>    "ip_rf": 0,<br>    "ip_tos": 0,<br>    "ip_total_length": 60,<br>    "ip_ttl": 53,<br>    "ip_version": 4,<br>    "src_ip": "88.216.214.39",<br>    "src_port": 47962,<br>    "tcp_ack": 0,<br>    "tcp_checksum": 15874,<br>    "tcp_flags": 2,<br>    "tcp_header_length": 20,<br>    "tcp_mss": 1400,<br>    "tcp_off": 10,<br>    "tcp_options": "M1400,S,T,N,W7,",<br>    "tcp_options_ordered": "MSTNW",<br>    "tcp_seq": 2169987200,<br>    "tcp_timestamp": 1663650426,<br>    "tcp_timestamp_echo_reply": 0,<br>    "tcp_urp": 0,<br>    "tcp_window_scaling": 7,<br>    "tcp_window_size": 29200,<br>    "ts": [<br>      1701754760,<br>      604442<br>    ]<br>  }<br>}</pre>
+
+            <hr>
+
+            <script>
+              fetch('https://tcpip.incolumitas.com/classify?by_ip=1&detail=1')
+                .then(response => response.json())
+                .then(function (data) {
+                  document.getElementById('p0f').innerText = JSON.stringify(data, null, 2);
+                })
+            </script>
+
+            <h3 id="tlsFingerprintNew" class="title is-3">TLS Fingerprint <a style="font-size: 70%" href="https://incolumitas.com/pages/TLS-Fingerprint/">[1]</a></h3>
+            <p>The <a href="https://incolumitas.com/pages/TLS-Fingerprint/">TLS fingerprinting API</a> allows you to
+              get
+              your TLS fingerprint. It can be used for various purposes such
+              as: Networking traffic analysis, Malware detection and Bot detection.
+            </p>
+            <pre id="tls-fingerprint"></pre>
+
+            <hr>
+
+            <h3 id="fingerprintjs" class="title is-3">fingerprintjs - Browser Fingerprint
+              <a style="font-size: 70%" href="https://github.com/fingerprintjs/fingerprintjs">[1]</a>
+            </h3>
+            <pre id="fpjs">8fc0423643ffd50c675250ca3659057b</pre>
+
+            <hr>
+
+            <script>
+              function initFingerprintJS() {
+                FingerprintJS.load().then(fp => {
+                  // The FingerprintJS agent is ready.
+                  // Get a visitor identifier when you'd like to.
+                  fp.get().then(result => {
+                    // This is the visitor identifier:
+                    document.getElementById('fpjs').innerText = result.visitorId
+                  });
+                });
+              }
+            </script>
+            <script async="" src="./fp.min.js" onload="initFingerprintJS()"></script>
+
+            <h3 id="canvasFp" class="title is-3">Canvas Fingerprint
+              <a style="font-size: 70%" href="https://browserleaks.com/canvas">[1]</a>
+            </h3>
+            <canvas id="cfp" height="40" width="240"></canvas>
+            <pre id="canvas_fingerprint">1CA7509E</pre>
+
+            <hr>
+
+            <h3 id="webglFp" class="title is-3">WebGL Fingerprint
+              <a style="font-size: 70%" href="https://codepen.io/jon/pen/LLPKbz">[1]</a>
+            </h3>
+            <canvas id="wfp" width="256" height="128"></canvas>
+            <pre id="webgl_fingerprint">c2a8e5a40b12da4f1b8c4fa6166e79a846ec90ad6031a43a6c907f616310ced4</pre>
+
+            <script async="" src="./fingerprints.js"></script>
+
+            <hr>
+
+            <h3 id="webWorkerNav" class="title is-3">Web Worker Navigatory Property
+              <a style="font-size: 70%" href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers">[1]</a>
+            </h3>
+            <pre id="webWorkerRes">{
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
+  "appVersion": "5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
+  "platform": "Win32",
+  "deviceMemory": 8,
+  "hardwareConcurrency": 24,
+  "language": "en",
+  "languages": [
+    "en"
+  ]
+}</pre>
+
+            <script src="./newTests.js?version=v0.6.4"></script>
+
+            <script>
+              function compareNavigatorProperties(obj, test) {
+                var propertiesToCheck = [
+                  'userAgent',
+                  'appVersion',
+                  'platform',
+                  // 'webdriver',
+                  'deviceMemory',
+                  'hardwareConcurrency',
+                  'cpuClass',
+                  // 'vendor',
+                  'language',
+                  'languages'
+                ];
+                for (let prop of propertiesToCheck) {
+                  let toTest = obj[prop];
+                  let tester = navigator[prop];
+
+                  if (Array.isArray(tester)) {
+                    toTest = toTest.toString()
+                    tester = tester.toString()
+                  }
+
+                  if (toTest !== tester) {
+                    console.log(prop, toTest, tester);
+                    new_results[test] = 'FAIL';
+                  } else {
+                    new_results[test] = 'OK';
+                  }
+                }
+                document.getElementById('new-tests').innerHTML = JSON.stringify(new_results, null, 2);
+              }
+
+              // https://github.com/berstend/puppeteer-extra/issues/451
+              var w;
+              if (typeof (Worker) !== "undefined") {
+                if (typeof (w) == "undefined") {
+                  w = new Worker("webworker2.js");
+                  document.getElementById("webWorkerRes").innerHTML = 'started...';
+                }
+                w.onmessage = function (event) {
+                  let obj = JSON.parse(event.data);
+                  console.log('webworker', event.data);
+                  compareNavigatorProperties(obj, "inconsistentWebWorkerNavigatorPropery");
+                  document.getElementById("webWorkerRes").innerHTML = event.data;
+                };
+              } else {
+                document.getElementById("webWorkerRes").innerHTML = "Sorry! No Web Worker support.";
+              }
+            </script>
+
+            <hr>
+
+            <h3 id="serviceWorker" class="title is-3">Service Worker Data
+              <a style="font-size: 70%" href="https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API">[1]</a>
+            </h3>
+            <pre id="serviceWorkerRes">{
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/119.0.0.0 Safari/537.36",
+  "appVersion": "5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/119.0.0.0 Safari/537.36",
+  "platform": "Win32",
+  "deviceMemory": 8,
+  "hardwareConcurrency": 24,
+  "language": "en",
+  "languages": [
+    "en"
+  ]
+}</pre>
+
+            <script type="text/javascript">
+              if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('./service-worker.js')
+                  .then(function () {
+                    console.log('sw registered');
+                  })
+                  .catch(function (e) {
+                    console.log('sw-error:', e);
+                  });
+              } else {
+                console.error('this browser does not support service workers');
+              }
+            </script>
+
+            <script type="text/javascript">
+              const broadcast = new BroadcastChannel('sw-channel');
+              // Listen to the response
+              broadcast.onmessage = function (event) {
+                if (event.data) {
+                  console.log('serviceworker', event.data);
+                  compareNavigatorProperties(event.data, "inconsistentServiceWorkerNavigatorPropery");
+                  document.getElementById('serviceWorkerRes').innerHTML = JSON.stringify(event.data, null, 2);
+                }
+              }
+            </script>
+
+            <hr>
+
+            <h3 id="browserData" class="title is-3">Fp-collect info (Modified by Me)</h3>
+            <pre id="fp">{
+  "byteLength": "unknown",
+  "appVersion": "5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
+  "onLine": true,
+  "doNotTrack": null,
+  "hardwareConcurrency": 24,
+  "timezone": 360,
+  "timezone2": "America/Chicago",
+  "systemTime": "Mon Dec 04 2023 23:39:19 GMT-0600 (Central Standard Time)",
+  "getTimezoneOffset": 360,
+  "toLocaleString": "12/4/2023, 11:39:19 PM",
+  "historyLength": 2,
+  "indexedDB": true,
+  "openDatabase": false,
+  "product": "Gecko",
+  "fmget": false,
+  "domAutomation": false,
+  "cookieEnabled": true,
+  "sendBeaconAvailable": true,
+  "appName": "Netscape",
+  "vendor": "Google Inc.",
+  "appCodeName": "Mozilla",
+  "userMediaAvailable": true,
+  "javaEnabled": false,
+  "batteryDetails": {
+    "charging": true,
+    "chargingTime": 0,
+    "dischargingTime": null,
+    "level": 1
+  },
+  "plugins": [
+    "PDF Viewer::Portable Document Format::internal-pdf-viewer::__application/pdf~pdf~Portable Document Format,text/pdf~pdf~Portable Document Format",
+    "Chrome PDF Viewer::Portable Document Format::internal-pdf-viewer::__application/pdf~pdf~Portable Document Format,text/pdf~pdf~Portable Document Format",
+    "Chromium PDF Viewer::Portable Document Format::internal-pdf-viewer::__application/pdf~pdf~Portable Document Format,text/pdf~pdf~Portable Document Format",
+    "Microsoft Edge PDF Viewer::Portable Document Format::internal-pdf-viewer::__application/pdf~pdf~Portable Document Format,text/pdf~pdf~Portable Document Format",
+    "WebKit built-in PDF::Portable Document Format::internal-pdf-viewer::__application/pdf~pdf~Portable Document Format,text/pdf~pdf~Portable Document Format"
+  ],
+  "mimeTypes": [
+    "Portable Document Format~~application/pdf~~pdf",
+    "Portable Document Format~~text/pdf~~pdf"
+  ],
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
+  "platform": "Win32",
+  "language": "en-US",
+  "languages": [
+    "en-US",
+    "en"
+  ],
+  "screen": {
+    "wInnerHeight": 987,
+    "wOuterHeight": 1072,
+    "wOuterWidth": 1906,
+    "wInnerWidth": 1906,
+    "wScreenX": 15,
+    "wPageXOffset": 0,
+    "wPageYOffset": 0,
+    "cWidth": 1889,
+    "cHeight": 5525,
+    "sWidth": 2560,
+    "sHeight": 1440,
+    "sAvailWidth": 2560,
+    "sAvailHeight": 1400,
+    "sColorDepth": 24,
+    "sPixelDepth": 24,
+    "wDevicePixelRatio": 1.5
+  },
+  "touchScreen": [
+    0,
+    false,
+    false
+  ],
+  "videoCard": [
+    "Intel Inc.",
+    "Intel Iris OpenGL Engine"
+  ],
+  "multimediaDevices": {
+    "speakers": 1,
+    "micros": 1,
+    "webcams": 1
+  },
+  "productSub": "20030107",
+  "navigatorPrototype": [
+    "vendorSub~~~function get vendorSub() { [native code] }",
+    "productSub~~~function get productSub() { [native code] }",
+    "vendor~~~() =&gt; vendor || 'Google Inc.'",
+    "maxTouchPoints~~~function get maxTouchPoints() { [native code] }",
+    "scheduling~~~function get scheduling() { [native code] }",
+    "userActivation~~~function get userActivation() { [native code] }",
+    "doNotTrack~~~function get doNotTrack() { [native code] }",
+    "geolocation~~~function get geolocation() { [native code] }",
+    "connection~~~function get connection() { [native code] }",
+    "plugins~~~function get plugins() { [native code] }",
+    "mimeTypes~~~function get mimeTypes() { [native code] }",
+    "pdfViewerEnabled~~~function get pdfViewerEnabled() { [native code] }",
+    "webkitTemporaryStorage~~~function get webkitTemporaryStorage() { [native code] }",
+    "webkitPersistentStorage~~~function get webkitPersistentStorage() { [native code] }",
+    "hardwareConcurrency~~~function get hardwareConcurrency() { [native code] }",
+    "cookieEnabled~~~function get cookieEnabled() { [native code] }",
+    "appCodeName~~~function get appCodeName() { [native code] }",
+    "appName~~~function get appName() { [native code] }",
+    "appVersion~~~function get appVersion() { [native code] }",
+    "platform~~~function get platform() { [native code] }",
+    "product~~~function get product() { [native code] }",
+    "userAgent~~~function get userAgent() { [native code] }",
+    "language~~~function get language() { [native code] }",
+    "languages~~~() =&gt; languages || ['en-US', 'en']",
+    "onLine~~~function get onLine() { [native code] }",
+    "getGamepads~~~function getGamepads() { [native code] }",
+    "javaEnabled~~~function javaEnabled() { [native code] }",
+    "sendBeacon~~~function sendBeacon() { [native code] }",
+    "vibrate~~~function vibrate() { [native code] }",
+    "constructor~~~function Navigator() { [native code] }",
+    "bluetooth~~~function get bluetooth() { [native code] }",
+    "clipboard~~~function get clipboard() { [native code] }",
+    "credentials~~~function get credentials() { [native code] }",
+    "keyboard~~~function get keyboard() { [native code] }",
+    "managed~~~function get managed() { [native code] }",
+    "mediaDevices~~~function get mediaDevices() { [native code] }",
+    "storage~~~function get storage() { [native code] }",
+    "serviceWorker~~~function get serviceWorker() { [native code] }",
+    "virtualKeyboard~~~function get virtualKeyboard() { [native code] }",
+    "wakeLock~~~function get wakeLock() { [native code] }",
+    "deviceMemory~~~function get deviceMemory() { [native code] }",
+    "ink~~~function get ink() { [native code] }",
+    "hid~~~function get hid() { [native code] }",
+    "locks~~~function get locks() { [native code] }",
+    "gpu~~~function get gpu() { [native code] }",
+    "mediaCapabilities~~~function get mediaCapabilities() { [native code] }",
+    "mediaSession~~~function get mediaSession() { [native code] }",
+    "permissions~~~function get permissions() { [native code] }",
+    "presentation~~~function get presentation() { [native code] }",
+    "usb~~~function get usb() { [native code] }",
+    "xr~~~function get xr() { [native code] }",
+    "serial~~~function get serial() { [native code] }",
+    "windowControlsOverlay~~~function get windowControlsOverlay() { [native code] }",
+    "userAgentData~~~function get userAgentData() { [native code] }",
+    "canShare~~~function canShare() { [native code] }",
+    "share~~~function share() { [native code] }",
+    "clearAppBadge~~~function clearAppBadge() { [native code] }",
+    "getBattery~~~function getBattery() { [native code] }",
+    "getUserMedia~~~function getUserMedia() { [native code] }",
+    "requestMIDIAccess~~~function requestMIDIAccess() { [native code] }",
+    "requestMediaKeySystemAccess~~~function requestMediaKeySystemAccess() { [native code] }",
+    "setAppBadge~~~function setAppBadge() { [native code] }",
+    "webkitGetUserMedia~~~function webkitGetUserMedia() { [native code] }",
+    "getInstalledRelatedApps~~~function getInstalledRelatedApps() { [native code] }",
+    "registerProtocolHandler~~~function registerProtocolHandler() { [native code] }",
+    "unregisterProtocolHandler~~~function unregisterProtocolHandler() { [native code] }",
+    "constructor~~~function Navigator() { [native code] }",
+    "__defineGetter__~~~",
+    "__defineSetter__~~~",
+    "hasOwnProperty~~~",
+    "__lookupGetter__~~~",
+    "__lookupSetter__~~~",
+    "isPrototypeOf~~~",
+    "propertyIsEnumerable~~~",
+    "toString~~~",
+    "valueOf~~~",
+    "__proto__~~~",
+    "toLocaleString~~~"
+  ],
+  "navigatorProperties": [
+    "vendorSub",
+    "productSub",
+    "vendor",
+    "maxTouchPoints",
+    "scheduling",
+    "userActivation",
+    "doNotTrack",
+    "geolocation",
+    "connection",
+    "plugins",
+    "mimeTypes",
+    "pdfViewerEnabled",
+    "webkitTemporaryStorage",
+    "webkitPersistentStorage",
+    "hardwareConcurrency",
+    "cookieEnabled",
+    "appCodeName",
+    "appName",
+    "appVersion",
+    "platform",
+    "product",
+    "userAgent",
+    "language",
+    "languages",
+    "onLine",
+    "getGamepads",
+    "javaEnabled",
+    "sendBeacon",
+    "vibrate",
+    "constructor",
+    "bluetooth",
+    "clipboard",
+    "credentials",
+    "keyboard",
+    "managed",
+    "mediaDevices",
+    "storage",
+    "serviceWorker",
+    "virtualKeyboard",
+    "wakeLock",
+    "deviceMemory",
+    "ink",
+    "hid",
+    "locks",
+    "gpu",
+    "mediaCapabilities",
+    "mediaSession",
+    "permissions",
+    "presentation",
+    "usb",
+    "xr",
+    "serial",
+    "windowControlsOverlay",
+    "userAgentData",
+    "canShare",
+    "share",
+    "clearAppBadge",
+    "getBattery",
+    "getUserMedia",
+    "requestMIDIAccess",
+    "requestMediaKeySystemAccess",
+    "setAppBadge",
+    "webkitGetUserMedia",
+    "getInstalledRelatedApps",
+    "registerProtocolHandler",
+    "unregisterProtocolHandler",
+    "constructor",
+    "__defineGetter__",
+    "__defineSetter__",
+    "hasOwnProperty",
+    "__lookupGetter__",
+    "__lookupSetter__",
+    "isPrototypeOf",
+    "propertyIsEnumerable",
+    "toString",
+    "valueOf",
+    "__proto__",
+    "toLocaleString"
+  ],
+  "etsl": 33,
+  "screenDesc": "function get width() { [native code] }",
+  "phantomJS": [
+    false,
+    false,
+    false
+  ],
+  "nightmareJS": false,
+  "selenium": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "webDriver": false,
+  "errorsGenerated": [
+    "azeaze is not defined",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    "Failed to construct 'WebSocket': The URL 'itsgonnafail' is invalid."
+  ],
+  "resOverflow": {
+    "depth": 9626,
+    "errorMessage": "Maximum call stack size exceeded",
+    "errorName": "RangeError",
+    "errorStacklength": 864
+  },
+  "accelerometerUsed": false,
+  "screenMediaQuery": true,
+  "hasChrome": true,
+  "detailChrome": {
+    "webstore": "TypeError: Cannot read properties of undefined (reading 'constructor')",
+    "runtime": "function Object() { [native code] }",
+    "app": "function Object() { [native code] }",
+    "csi": "function Function() { [native code] }",
+    "loadTimes": "function Function() { [native code] }",
+    "connect": "Error in invocation of runtime.connect(optional string extensionId, optional object connectInfo): chrome.runtime.connect() called from a webpage must specify an Extension ID (string) for its first argument.",
+    "sendMessage": "Error in invocation of runtime.sendMessage(optional string extensionId, any message, optional object options, optional function responseCallback): No matching signature."
+  },
+  "permissions": {
+    "state": "default",
+    "permission": "default"
+  },
+  "allPermissions": {
+    "notifications": {
+      "state": "default",
+      "permission": "default"
+    },
+    "ambient-light-sensor": {
+      "error": "TypeError: Failed to execute 'query' on 'Permissions': GenericSensorExtraClasses flag is not enabled."
+    },
+    "bluetooth": {
+      "error": "TypeError: Failed to execute 'query' on 'Permissions': Failed to read the 'name' property from 'PermissionDescriptor': The provided value 'bluetooth' is not a valid enum value of type PermissionName."
+    },
+    "device-info": {
+      "error": "TypeError: Failed to execute 'query' on 'Permissions': Failed to read the 'name' property from 'PermissionDescriptor': The provided value 'device-info' is not a valid enum value of type PermissionName."
+    },
+    "nfc": {
+      "error": "TypeError: Failed to execute 'query' on 'Permissions': Web NFC is not enabled."
+    },
+    "push": {
+      "error": "NotSupportedError: Failed to execute 'query' on 'Permissions': Push Permission without userVisibleOnly:true isn't supported yet."
+    },
+    "speaker-selection": {
+      "error": "TypeError: Failed to execute 'query' on 'Permissions': Failed to read the 'name' property from 'PermissionDescriptor': The provided value 'speaker-selection' is not a valid enum value of type PermissionName."
+    },
+    "accelerometer": {
+      "state": "granted",
+      "permission": "default"
+    },
+    "background-fetch": {
+      "state": "granted",
+      "permission": "default"
+    },
+    "background-sync": {
+      "state": "granted",
+      "permission": "default"
+    },
+    "camera": {
+      "state": "prompt",
+      "permission": "default"
+    },
+    "clipboard-write": {
+      "state": "granted",
+      "permission": "default"
+    },
+    "display-capture": {
+      "state": "prompt",
+      "permission": "default"
+    },
+    "geolocation": {
+      "state": "prompt",
+      "permission": "default"
+    },
+    "gyroscope": {
+      "state": "granted",
+      "permission": "default"
+    },
+    "magnetometer": {
+      "state": "granted",
+      "permission": "default"
+    },
+    "microphone": {
+      "state": "prompt",
+      "permission": "default"
+    },
+    "midi": {
+      "state": "granted",
+      "permission": "default"
+    },
+    "persistent-storage": {
+      "state": "prompt",
+      "permission": "default"
+    }
+  },
+  "iframeChrome": "object",
+  "debugTool": false,
+  "battery": true,
+  "deviceMemory": 8,
+  "tpCanvas": {
+    "0": 0,
+    "1": 0,
+    "2": 0,
+    "3": 0
+  },
+  "sequentum": false,
+  "audioCodecs": {
+    "ogg": "probably",
+    "mp3": "probably",
+    "wav": "probably",
+    "m4a": "maybe",
+    "aac": "probably"
+  },
+  "videoCodecs": {
+    "ogg": "probably",
+    "h264": "probably",
+    "webm": "probably",
+    "mpeg4v": "",
+    "mpeg4a": "",
+    "theora": ""
+  },
+  "webSocketSupportTimeout": false
+}</pre>
+
+            <script>
+              var fpscanner_results = {};
+
+              fpCollect.generateFingerprint().then((fingerprint) => {
+                document.getElementById('fp').innerHTML = JSON.stringify(fingerprint, null, 2);
+
+                let xscanner = fpscanner;
+                scannerResults = xscanner.analyseFingerprint(fingerprint);
+
+                for (var name in scannerResults) {
+                  data = scannerResults[name];
+                  let ok = "FAIL";
+                  if (data.consistent == 2) {
+                    ok = "WARN";
+                  } else if (data.consistent == 3) {
+                    ok = "OK";
+                  }
+                  fpscanner_results[name] = ok;
+                }
+
+                // update detection-tests
+                var el = document.getElementById('detection-tests');
+                var obj = JSON.parse(el.innerHTML);
+                obj.fpscanner = fpscanner_results;
+                el.innerHTML = JSON.stringify(obj, null, 2);
+              });
+            </script>
+
+            <script>
+              runBotDetection = function () {
+                var documentDetectionKeys = [
+                  "__webdriver_evaluate",
+                  "__selenium_evaluate",
+                  "__webdriver_script_function",
+                  "__webdriver_script_func",
+                  "__webdriver_script_fn",
+                  "__fxdriver_evaluate",
+                  "__driver_unwrapped",
+                  "__webdriver_unwrapped",
+                  "__driver_evaluate",
+                  "__selenium_unwrapped",
+                  "__fxdriver_unwrapped",
+                  "webdriver",
+                  "__driver_evaluate",
+                  "__webdriver_evaluate",
+                  "__selenium_evaluate",
+                  "__fxdriver_evaluate",
+                  "__driver_unwrapped",
+                  "__webdriver_unwrapped",
+                  "__selenium_unwrapped",
+                  "__fxdriver_unwrapped",
+                  "_Selenium_IDE_Recorder",
+                  "_selenium",
+                  "calledSelenium",
+                  "_WEBDRIVER_ELEM_CACHE",
+                  "ChromeDriverw",
+                  "driver-evaluate",
+                  "webdriver-evaluate",
+                  "selenium-evaluate",
+                  "webdriverCommand",
+                  "webdriver-evaluate-response",
+                  "__webdriverFunc",
+                  "__webdriver_script_fn",
+                  "__$webdriverAsyncExecutor",
+                  "__lastWatirAlert",
+                  "__lastWatirConfirm",
+                  "__lastWatirPrompt",
+                  "$chrome_asyncScriptInfo",
+                  "$cdc_asdjflasutopfhvcZLmcfl_"
+                ];
+
+                var windowDetectionKeys = [
+                  "_phantom",
+                  "__nightmare",
+                  "_selenium",
+                  "callPhantom",
+                  "callSelenium",
+                  "_Selenium_IDE_Recorder",
+                ];
+
+                for (const windowDetectionKey in windowDetectionKeys) {
+                  const windowDetectionKeyValue = windowDetectionKeys[windowDetectionKey];
+                  if (window[windowDetectionKeyValue]) {
+                    return true;
+                  }
+                }
+                for (const documentDetectionKey in documentDetectionKeys) {
+                  const documentDetectionKeyValue = documentDetectionKeys[documentDetectionKey];
+                  if (window['document'][documentDetectionKeyValue]) {
+                    return true;
+                  }
+                }
+
+                for (const documentKey in window['document']) {
+                  if (documentKey.match(/\$[a-z]dc_/) && window['document'][documentKey]['cache_']) {
+                    return true;
+                  }
+                }
+
+                if (window['external'] && window['external'].toString() && (window['external'].toString()['indexOf']('Sequentum') != -1)) return true;
+
+                if (window['document']['documentElement']['getAttribute']('selenium')) return true;
+                if (window['document']['documentElement']['getAttribute']('webdriver')) return true;
+                if (window['document']['documentElement']['getAttribute']('driver')) return true;
+
+                return false;
+              };
+
+              // User-Agent Test
+              old_results.intoli['userAgent'] = /HeadlessChrome/.test(navigator.userAgent) ? 'FAIL' : 'OK';
+
+              // Webdriver Test
+              old_results.intoli['webDriver'] = navigator.webdriver ? 'FAIL' : 'OK';
+
+              // Advanced Webdriver Test
+              old_results.intoli['webDriverAdvanced'] = runBotDetection() ? 'FAIL' : 'OK';
+
+              // Chrome Test
+              old_results.intoli['webDriverAdvanced'] = !window.chrome ? 'FAIL' : 'OK';
+
+              // Permissions Test
+              const permissionsElement = document.getElementById('permissions-result');
+              (async () => {
+                const permissionStatus = await navigator.permissions.query({ name: 'notifications' });
+                if (Notification.permission === 'denied' && permissionStatus.state === 'prompt') {
+                  old_results.intoli['permissions'] = 'FAIL';
+                } else {
+                  old_results.intoli['permissions'] = 'OK';
+                }
+              })();
+
+              // Plugins Length Test
+              old_results.intoli['pluginsLength'] = navigator.plugins.length === 0 ? 'FAIL' : 'OK';
+
+              // Plugins type Test
+              if (!(navigator.plugins instanceof PluginArray) || navigator.plugins.length === 0 || window.navigator.plugins[0].toString() !== '[object Plugin]') {
+                old_results.intoli['pluginArray'] = 'FAIL';
+              } else {
+                old_results.intoli['pluginArray'] = 'OK';
+              }
+
+              // Languages Test
+              old_results.intoli['languages'] = !navigator.languages || navigator.languages.length === 0 ? 'FAIL' : 'OK';
+
+              // @TODO: FIX THIS WITHOUT Modernizr
+              // Hairline Feature Test
+              // const hairlineFeatureElement = document.getElementById('hairline-feature');
+              // if (Modernizr.hairline) {
+              //   hairlineFeatureElement.innerHTML = 'present';
+              //   hairlineFeatureElement.classList.add('passed');
+              // } else {
+              //   hairlineFeatureElement.innerHTML = 'missing';
+              //   hairlineFeatureElement.classList.add('failed');
+              // }
+
+              // Broken Image Dimensions Test
+              const body = document.body;
+              const image = document.createElement('img');
+              image.onerror = function () {
+                if (image.width == 0 && image.height == 0) {
+                  old_results.intoli['brokenImageDimensions'] = 'FAIL';
+                } else {
+                  old_results.intoli['brokenImageDimensions'] = 'OK';
+                }
+              };
+              body.appendChild(image);
+              image.src = 'https://intoli.com/nonexistent-image.png';
+
+              // FINALIZE
+              // show to our dear user
+              old_results.fpscanner = fpscanner_results;
+              document.getElementById('detection-tests').innerHTML = JSON.stringify(old_results, null, 2);
+            </script>
+
+          </div>
+        </div>
+      </div>
+
+
+</div></div><img src="https://intoli.com/nonexistent-image.png"><script src="https://incolumitas.com/data/sailthru.js"></script></body></html>
