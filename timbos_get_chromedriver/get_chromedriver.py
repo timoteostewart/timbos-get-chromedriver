@@ -100,6 +100,7 @@ def get_chromedriver(
             "--disable-features=OptimizationGuideModelDownloading,OptimizationHintsFetching,OptimizationTargetPrediction,OptimizationHints",
             "--disable-fetching-hints-at-navigation-start",
             "--ignore-certificate-errors",
+            "--prerender-from-omnibox=disabled",
             "--verbose",
             "--webview-disable-safebrowsing-support",
         ]
