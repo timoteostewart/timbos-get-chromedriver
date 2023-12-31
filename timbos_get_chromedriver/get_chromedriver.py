@@ -95,6 +95,7 @@ def get_chromedriver(
             "--disable-background-networking",
             "--disable-breakpad",
             "--disable-crash-reporter",
+            "--check-for-update-interval=3600",
             "--disable-default-apps",
             "--disable-extensions",
             "--disable-features=OptimizationGuideModelDownloading,OptimizationHintsFetching,OptimizationTargetPrediction,OptimizationHints",
