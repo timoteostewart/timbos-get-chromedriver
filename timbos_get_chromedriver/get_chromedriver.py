@@ -91,11 +91,12 @@ def get_chromedriver(
     ## default additional chrome_options arguments
     if addl_chrome_options_args is None:
         addl_chrome_options_args = [
+            "--check-for-update-interval=3600",
             "--disable-auto-reload",
             "--disable-background-networking",
             "--disable-breakpad",
+            "--disable-component-update",
             "--disable-crash-reporter",
-            "--check-for-update-interval=3600",
             "--disable-default-apps",
             "--disable-extensions",
             "--disable-features=OptimizationGuideModelDownloading,OptimizationHintsFetching,OptimizationTargetPrediction,OptimizationHints",
